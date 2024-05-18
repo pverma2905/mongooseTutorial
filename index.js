@@ -1,8 +1,12 @@
 const express = require("express");
 const app = express();
 const User = require("./connection")
+const Employee = require("./connection")
+
 
 app.use(express.json())
+
+//  User Schema
 
 // post
 app.post("/register",async(req,res)=>{
@@ -151,6 +155,83 @@ app.get("/existAndTypeOperator", async(req,res)=>{
     const data = await User.find({email:{$exists:true,$type:"bool"}})
     return res.status(200).send(data)
 })
+
+
+// Employee Schema
+
+// insertMany
+
+app.post('/postdata', async(req, res)=>{
+    const data = await Employee.insertMany([
+        {category:'drinks', budget:121, spent:150},
+        {category:'clothes', budget:113, spent:50},
+        {category:'misc', budget:513, spent:300},
+        {category:'travel', budget:200, spent:650},
+        {category:'food', budget:400, spent:450}
+    ])
+    return res.status(200).send(data)
+})
+
+app.get("/expressionOperator",async(req, res)=>{
+    // const data = await Employee.find({$expr:{$gt:["$spent","$budget"]}})
+    const data = await Employee.find({$expr:{$lt:["$spent","$budget"]}})
+    return res.status(200).send(data)
+})
+
+app.get("/modOperator",async(req, res)=>{
+    // const data = await Employee.find({$expr:{$gt:["$spent","$budget"]}})
+    const data = await Employee.find({budget:{$mod:[4,1]}})
+    return res.status(200).send(data)
+})
+
+app.get("/regexOperator",async(req, res)=>{
+    // const data = await Employee.find({$expr:{$gt:["$spent","$budget"]}})
+   const data = await Employee.find({category:{$regex:/^m/}})
+    
+    return res.status(200).send(data)
+})
+
+// $text
+
+// indexes
+
+app.get("/createindex", async (req, res) => {
+    try {
+        // Check if the incorrect index exists
+        const incorrectIndexExists = await Employee.collection.indexExists("categroy_text");
+        if (incorrectIndexExists) {
+            // Drop the incorrect index
+            await Employee.collection.dropIndex("categroy_text");
+            console.log("Dropped incorrect index: categroy_text");
+        }
+
+        // Check if the correct index exists
+        const correctIndexExists = await Employee.collection.indexExists("category_text");
+        if (correctIndexExists) {
+            return res.status(203).send("Correct index already exists");
+        } else {
+            // Create the new correct index
+            const createIndex = await Employee.collection.createIndex({ category: "text" });
+            return res.status(200).send("Index created: " + createIndex);
+        }
+    } catch (error) {
+        console.error("Error managing index:", error);
+        return res.status(500).send("Internal Server Error");
+    }
+});
+
+app.get("/indexsearch", async (req, res) => {
+    try {
+        const data = await Employee.find({ $text: { $search: "m" } });
+        return res.status(200).send(data);
+    } catch (error) { 
+        console.error("Error performing search:", error);
+        return res.status(500).send("Internal Server Error");
+    }
+});
+
+
+
 
 
 

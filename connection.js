@@ -33,3 +33,38 @@ const User = new mongoose.model('User', userSchema);
 
 module.exports = User
 
+
+// Declare the Schema of the Mongo model
+const employeeSchema = new mongoose.Schema({
+    category:{
+        type:String,
+        // required:true,
+    },
+    email:{
+        type:String,
+        // required:true,
+    },
+    password:{
+        type:String,
+        // required:true,
+    },
+    category:{
+        type:String,
+        required:true,
+    },
+    budget:{
+        type:Number,
+        required:true, 
+    },
+    spent:{
+        type:Number,
+        required:true, 
+    },
+   
+});
+
+//Export the model
+const Employee = new mongoose.model('Employee', employeeSchema);
+
+module.exports = Employee
+
